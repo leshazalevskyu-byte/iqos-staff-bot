@@ -48,15 +48,23 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --- Обробка вибору ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    name = update.message.text
-    now = datetime.now()
+    selected_name = update.message.text
+    today = datetime.now().strftime("%Y-%m-%d")
+    records = sheet.get_all_records()
 
-    date = now.strftime("%Y-%m-%d")
-    time = now.strftime("%H:%M")
+    for row in records:
+        if str(row["Date"]) == today and row["Name"] == selected_name:
+            shift = row["Shift"]
+            tasks = row["Tasks"]
 
-    sheet.append_row([date, name, time])
+            await update.message.reply_text(
+                f"👤 {selected_name}\n"
+                f"🕒 Зміна: {shift}\n\n"
+                f"📋 Обовʼязки:\n{tasks}"
+            )
+            return
 
-    await update.message.reply_text(f"✅ {name}, запис збережено!")
+    await update.message.reply_text("❌ Дані не знайдено.")
 
 # --- Запуск ---
 app = ApplicationBuilder().token(TOKEN).build()
@@ -67,4 +75,5 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 print("Бот запущений...")
 
 app.run_polling()
+
 
