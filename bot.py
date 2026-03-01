@@ -5,6 +5,7 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime
 
 import os
+import re
 TOKEN = os.environ["BOT_TOKEN"]
 
 # --- Підключення до Google Sheets ---
@@ -56,7 +57,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
       if str(row["Date"]).strip()[:10] == today and row["Name"].strip() == selected_name.strip():
             shift = row["Shift"]
             tasks = row["Tasks"]
-          tasks_list = tasks.split(";")
+         tasks_list = re.split(r"[;；]", tasks)
 formatted_tasks = "\n".join([f"• {task.strip()}" for task in tasks_list])
 
             await update.message.reply_text(
@@ -77,6 +78,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 print("Бот запущений...")
 
 app.run_polling()
+
 
 
 
