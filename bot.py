@@ -4,7 +4,8 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 
-TOKEN = "8623819950:AAH1mw7tyZbr_uEnrofFilXLyGV7XK1P_8w"
+import os
+TOKEN = os.environ["BOT_TOKEN"]
 
 # --- Підключення до Google Sheets ---
 scope = [
@@ -12,7 +13,10 @@ scope = [
     "https://www.googleapis.com/auth/drive"
 ]
 
-creds = Credentials.from_service_account_file("credentials.json", scopes=scope)
+import json
+
+creds_dict = json.loads(os.environ["GOOGLE_CREDENTIALS"])
+creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
 client = gspread.authorize(creds)
 
 sheet = client.open("IQOS_Grafik").sheet1  # Назва таблиці
@@ -46,4 +50,5 @@ app.add_handler(CommandHandler("start", start))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
 print("Бот запущений...")
+
 app.run_polling()
