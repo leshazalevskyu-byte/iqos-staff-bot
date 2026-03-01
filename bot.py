@@ -53,7 +53,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     records = sheet.get_all_records()
 
     for row in records:
-        if str(row["Date"]) == today and row["Name"] == selected_name:
+      if str(row["Date"]).strip()[:10] == today and row["Name"].strip() == selected_name.strip():
             shift = row["Shift"]
             tasks = row["Tasks"]
 
@@ -75,5 +75,6 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 print("Бот запущений...")
 
 app.run_polling()
+
 
 
