@@ -56,11 +56,13 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
       if str(row["Date"]).strip()[:10] == today and row["Name"].strip() == selected_name.strip():
             shift = row["Shift"]
             tasks = row["Tasks"]
+          tasks_list = tasks.split(";")
+formatted_tasks = "\n".join([f"• {task.strip()}" for task in tasks_list])
 
             await update.message.reply_text(
                 f"👤 {selected_name}\n"
                 f"🕒 Зміна: {shift}\n\n"
-                f"📋 Обовʼязки:\n{tasks}"
+                f"📋 Обовʼязки:\n{formatted_tasks}"
             )
             return
 
@@ -75,6 +77,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 print("Бот запущений...")
 
 app.run_polling()
+
 
 
 
