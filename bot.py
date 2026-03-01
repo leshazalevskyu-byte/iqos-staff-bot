@@ -23,13 +23,28 @@ sheet = client.open("IQOS_Grafik").sheet1  # Назва таблиці
 
 # --- Команда /start ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    keyboard = [["Тімченко Аліна", "Котова Олександра"],
-                ["Марініна Ірина", "Рибіна Катерина"],
-                ["Кех Евеліна"]]
+    today = datetime.now().strftime("%Y-%m-%d")
+    records = sheet.get_all_records()
 
+    today_employees = []
+
+    for row in records:
+        if str(row["Date"]) == today:
+            today_employees.append(row["Name"])
+
+    today_employees = list(set(today_employees))
+
+    if not today_employees:
+        await update.message.reply_text("❌ Сьогодні ніхто не працює.")
+        return
+
+    keyboard = [[name] for name in today_employees]
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
-    await update.message.reply_text("Оберіть своє ім'я:", reply_markup=reply_markup)
+    await update.message.reply_text(
+        f"📅 Сьогодні {today}\n\nОберіть працівника:",
+        reply_markup=reply_markup
+    )
 
 # --- Обробка вибору ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -52,3 +67,4 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 print("Бот запущений...")
 
 app.run_polling()
+
