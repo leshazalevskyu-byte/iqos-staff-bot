@@ -55,17 +55,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     for row in records:
         if str(row["Date"]).strip()[:10] == today and row["Name"].strip() == selected_name.strip():
-        shift = row["Shift"]
-        tasks = row["Tasks"]
-        tasks_list = re.split(r"[;；]", tasks)
-        formatted_tasks = "\n".join([f"• {task.strip()}" for task in tasks_list])
-
-        await update.message.reply_text(
-            f"👤 {selected_name}\n"
-            f"🕒 Зміна: {shift}\n\n"
-            f"📋 Обов’язки:\n{formatted_tasks}"
-        )
-        return
+            shift = row["Shift"]
+            tasks = row["Tasks"]
+            tasks_list = re.split(r"[;；]", tasks)
+            formatted_tasks = "\n".join([f"• {task.strip()}" for task in tasks_list])
+    
+            await update.message.reply_text(
+                f"👤 {selected_name}\n"
+                f"🕒 Зміна: {shift}\n\n"
+                f"📋 Обов’язки:\n{formatted_tasks}"
+            )
+            return
 
     await update.message.reply_text("❌ Дані не знайдено.")
 
@@ -78,6 +78,7 @@ app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 print("Бот запущений...")
 
 app.run_polling()
+
 
 
 
