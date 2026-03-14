@@ -1,237 +1,215 @@
-from telegram import Update, ReplyKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
-
+import os
 import gspread
 from google.oauth2.service_account import Credentials
-
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-import os
-import json
+from telegram import Update, ReplyKeyboardMarkup
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters
+)
 
-
-TOKEN = os.environ["BOT_TOKEN"]
-
-# ---------- Google Sheets ----------
+# ---------------- GOOGLE SHEETS ----------------
 
 scope = [
-"https://www.googleapis.com/auth/spreadsheets",
-"https://www.googleapis.com/auth/drive"
+    "https://spreadsheets.google.com/feeds",
+    "https://www.googleapis.com/auth/drive"
 ]
 
-creds_dict = json.loads(os.environ["GOOGLE_CREDENTIALS"])
-creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
+creds = Credentials.from_service_account_file(
+    "credentials.json",
+    scopes=scope
+)
 
 client = gspread.authorize(creds)
 
 sheet = client.open("IQOS_Grafik").sheet1
 
-
-# ---------- українські місяці ----------
+# ---------------- МІСЯЦІ ----------------
 
 months = {
-1: "січня",
-2: "лютого",
-3: "березня",
-4: "квітня",
-5: "травня",
-6: "червня",
-7: "липня",
-8: "серпня",
-9: "вересня",
-10: "жовтня",
-11: "листопада",
-12: "грудня"
+1:"січня",2:"лютого",3:"березня",4:"квітня",
+5:"травня",6:"червня",7:"липня",8:"серпня",
+9:"вересня",10:"жовтня",11:"листопада",12:"грудня"
 }
 
-
-# ---------- головне меню ----------
+# ---------------- МЕНЮ ----------------
 
 def main_menu():
 
-keyboard = [
-    ["👥 Хто сьогодні працює"],
-    ["📋 Всі задачі на сьогодні"],
-    ["📅 Хто завтра працює"]
-]
+    keyboard = [
+        ["👥 Хто сьогодні працює"],
+        ["📋 Всі задачі на сьогодні"],
+        ["📅 Хто завтра працює"]
+    ]
 
-return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
-
-# ---------- /start ----------
+# ---------------- START ----------------
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-now = datetime.now(ZoneInfo("Europe/Kyiv"))
+    now = datetime.now(ZoneInfo("Europe/Kyiv"))
 
-today_pretty = f"{now.day} {months[now.month]}"
-
-await update.message.reply_text(
-    f"📅 Сьогодні {today_pretty}\n\nОберіть дію:",
-    reply_markup=main_menu()
-)
-
-
-# ---------- обробка кнопок ----------
-
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-selected = update.message.text
-
-now = datetime.now(ZoneInfo("Europe/Kyiv"))
-
-today = now.strftime("%Y-%m-%d")
-tomorrow = (now + timedelta(days=1)).strftime("%Y-%m-%d")
-
-today_pretty = f"{now.day} {months[now.month]}"
-
-records = sheet.get_all_records()
-
-
-# ---------- назад ----------
-
-if selected == "⬅️ Назад":
+    today_pretty = f"{now.day} {months[now.month]}"
 
     await update.message.reply_text(
         f"📅 Сьогодні {today_pretty}\n\nОберіть дію:",
         reply_markup=main_menu()
     )
-    return
 
+# ---------------- ОБРОБКА ----------------
 
-# ---------- хто сьогодні працює ----------
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-if selected == "👥 Хто сьогодні працює":
+    text = update.message.text
 
-    employees = []
+    now = datetime.now(ZoneInfo("Europe/Kyiv"))
 
-    for row in records:
-        if today in str(row["Date"]):
-            employees.append(row["Name"])
+    today = now.strftime("%Y-%m-%d")
+    tomorrow = (now + timedelta(days=1)).strftime("%Y-%m-%d")
 
-    employees = list(set(employees))
+    records = sheet.get_all_records()
 
-    if not employees:
+# ---------------- ХТО СЬОГОДНІ ----------------
 
-        await update.message.reply_text("❌ Сьогодні ніхто не працює")
+    if text == "👥 Хто сьогодні працює":
+
+        employees = []
+
+        for row in records:
+
+            if str(row["Date"]) == today:
+
+                employees.append(row["Name"])
+
+        employees = list(set(employees))
+
+        keyboard = [[name] for name in employees]
+
+        keyboard.append(["⬅️ Назад"])
+
+        await update.message.reply_text(
+            "👥 Оберіть працівника:",
+            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        )
+
         return
 
-    keyboard = [[e] for e in employees]
+# ---------------- ХТО ЗАВТРА ----------------
 
-    keyboard.append(["⬅️ Назад"])
+    if text == "📅 Хто завтра працює":
 
-    await update.message.reply_text(
-        "👥 Оберіть працівника:",
-        reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
-    )
+        employees = []
 
-    return
+        for row in records:
 
+            if str(row["Date"]) == tomorrow:
 
-# ---------- задачі конкретного працівника ----------
+                employees.append(row["Name"])
 
-employee_tasks = []
+        employees = list(set(employees))
 
-for row in records:
+        if not employees:
 
-    if selected == row["Name"] and today in str(row["Date"]):
+            await update.message.reply_text("❌ Ніхто не працює")
 
-        tasks = row["Tasks"].split(";")
+            return
 
-        for task in tasks:
-            employee_tasks.append(task.strip())
-
-if employee_tasks:
-
-    text = f"📋 Задачі для {selected}:\n\n"
-
-    for task in employee_tasks:
-        text += f"• {task}\n"
-
-    await update.message.reply_text(
-        text,
-        reply_markup=ReplyKeyboardMarkup([["⬅️ Назад"]], resize_keyboard=True)
-    )
-
-    return
-
-
-# ---------- всі задачі ----------
-
-if selected == "📋 Всі задачі на сьогодні":
-
-    tasks = []
-
-    for row in records:
-
-        if today in str(row["Date"]):
-
-            tasks.append(f"{row['Name']} — {row['Task']}")
-
-    if not tasks:
-
-        text = "❌ На сьогодні задач немає"
-
-    else:
-
-        text = "📋 Задачі на сьогодні:\n\n" + "\n".join(tasks)
-
-    await update.message.reply_text(
-        text,
-        reply_markup=ReplyKeyboardMarkup([["⬅️ Назад"]], resize_keyboard=True)
-    )
-
-    return
-
-
-# ---------- хто завтра працює ----------
-
-if selected == "📅 Хто завтра працює":
-
-    employees = []
-    for row in records:
-
-        if tomorrow in str(row["Date"]):
-
-            employees.append(row["Name"])
-
-    employees = list(set(employees))
-
-    if not employees:
-
-        text = "❌ Завтра ніхто не працює"
-
-    else:
-
-        text = "📅 Завтра працюють:\n\n"
+        message = "📅 Завтра працюють:\n\n"
 
         for e in employees:
 
-            text += f"• {e}\n"
+            message += f"• {e}\n"
 
-    await update.message.reply_text(
-        text,
-        reply_markup=ReplyKeyboardMarkup([["⬅️ Назад"]], resize_keyboard=True)
-    )
+        await update.message.reply_text(message)
 
-    return
+        return
 
+# ---------------- ВСІ ЗАДАЧІ ----------------
 
-# ---------- запуск ----------
+    if text == "📋 Всі задачі на сьогодні":
+
+        tasks = []
+
+        for row in records:
+
+            if str(row["Date"]) == today:
+
+                name = row["Name"]
+
+                task_list = str(row["Tasks"]).split(";")
+
+                for t in task_list:
+
+                    tasks.append(f"{name} — {t.strip()}")
+
+        if not tasks:
+
+            await update.message.reply_text("❌ Немає задач")
+
+            return
+
+        message = "📋 Задачі на сьогодні:\n\n"
+
+        for t in tasks:
+
+            message += f"• {t}\n"
+
+        await update.message.reply_text(message)
+
+        return
+
+# ---------------- НАЗАД ----------------
+
+    if text == "⬅️ Назад":
+
+        await start(update, context)
+
+        return
+
+# ---------------- ЗАДАЧІ ПРАЦІВНИКА ----------------
+
+    employee_tasks = []
+
+    for row in records:
+
+        if str(row["Date"]) == today and row["Name"] == text:
+
+            tasks = str(row["Tasks"]).split(";")
+
+            for t in tasks:
+
+                employee_tasks.append(t.strip())
+
+    if employee_tasks:
+
+        message = f"📋 Задачі для {text}\n\n"
+
+        for t in employee_tasks:
+            message += f"• {t}\n"
+
+        await update.message.reply_text(message)
+
+        return
+
+# ---------------- ЗАПУСК ----------------
 
 def main():
 
-app = ApplicationBuilder().token(TOKEN).build()
+    token = os.getenv("BOT_TOKEN")
 
-app.add_handler(CommandHandler("start", start))
+    app = ApplicationBuilder().token(token).build()
 
-app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    app.add_handler(CommandHandler("start", start))
 
-print("Bot started")
+    app.add_handler(MessageHandler(filters.TEXT, handle_message))
 
-app.run_polling()
-
+    app.run_polling()
 
 if __name__ == "__main__":
-main()
+    main()
