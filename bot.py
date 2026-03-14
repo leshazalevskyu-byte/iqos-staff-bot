@@ -4,6 +4,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 import os
 import json
 
@@ -36,7 +37,7 @@ def main_menu():
 # --- Команда /start ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now(ZoneInfo("Europe/Kyiv")).strftime("%Y-%m-%d")
 
     await update.message.reply_text(
         f"📅 Сьогодні {today}\n\nОберіть дію:",
@@ -49,9 +50,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     selected_name = update.message.text
 
-    today = datetime.now().strftime("%Y-%m-%d")
-    tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-
+    today = datetime.now(ZoneInfo("Europe/Kyiv")).strftime("%Y-%m-%d")
+    tomorrow = (datetime.now(ZoneInfo("Europe/Kyiv")) + timedelta(days=1)).strftime("%Y-%m-%d")
     records = sheet.get_all_records()
 
     # ⬅️ Назад
