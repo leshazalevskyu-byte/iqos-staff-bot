@@ -122,26 +122,26 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
     # 👤 Завдання конкретного працівника
-for row in records:
+    for row in records:
 
-    if str(row["Date"])[:10] == today and row["Name"] == selected_name:
+        if str(row["Date"])[:10] == today and row["Name"] == selected_name:
 
-        shift = row["Shift"]
-        tasks = row["Tasks"]
+            shift = row["Shift"]
+            tasks = row["Tasks"]
 
-        text = f"👤 {selected_name}\n\n"
-        text += f"🕒 Зміна: {shift}\n\n"
-        text += "📋 Завдання:\n"
+            text = f"👤 {selected_name}\n\n"
+            text += f"🕒 Зміна: {shift}\n\n"
+            text += "📋 Завдання:\n"
 
-        for task in tasks.split(";"):
-            text += f"• {task.strip()}\n"
+            for task in tasks.split(";"):
+                text += f"• {task.strip()}\n"
 
-        keyboard = [["⬅️ Назад"]]
+            keyboard = [["⬅️ Назад"]]
 
-        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+            reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
-        await update.message.reply_text(text, reply_markup=reply_markup)
-        return
+            await update.message.reply_text(text, reply_markup=reply_markup)
+            return
 
     for row in records:
         if str(row["Date"]).strip()[:10] == today and row["Name"].strip() == selected_name.strip():
