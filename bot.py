@@ -136,8 +136,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             for task in tasks.split(";"):
                 text += f"• {task.strip()}\n"
 
-            await update.message.reply_text(text)
-            return
+            keyboard = [["⬅️ Назад"]]
+
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+        await update.message.reply_text(text, reply_markup=reply_markup)
+        return
 
     for row in records:
         if str(row["Date"]).strip()[:10] == today and row["Name"].strip() == selected_name.strip():
