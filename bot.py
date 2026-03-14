@@ -56,6 +56,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     selected_name = update.message.text
     today = datetime.now().strftime("%Y-%m-%d")
+    tomorrow = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
     records = sheet.get_all_records()
 
     # ⬅️ Назад у головне меню
@@ -99,6 +100,32 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(text, reply_markup=reply_markup)
         return
 
+       # 📅 Хто завтра працює
+       if selected_name == "📅 Хто завтра працює":
+
+           employees = []
+
+           for row in records:
+               if str(row["Date"])[:10] == tomorrow:
+                   employees.append(row["Name"])
+
+           employees = list(set(employees))
+
+           if not employees:
+               await update.message.reply_text("❌ Завтра ніхто не працює")
+               return
+
+           text = "📅 Завтра працюють:\n\n"
+
+           for e in employees:
+               text += f"• {e}\n"
+
+           keyboard = [["⬅️ Назад"]]
+
+           reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+           await update.message.reply_text(text, reply_markup=reply_markup)
+           return
 
     # 📋 Всі задачі на сьогодні
     if selected_name == "📋 Всі задачі на сьогодні":
