@@ -39,18 +39,17 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Сьогодні ніхто не працює.")
         return
 
-   keyboard = [
-["👥 Хто сьогодні працює"],
-["📋 Всі задачі на сьогодні"],
-] + [[name] for name in today_employees]
+    keyboard = [
+        ["👥 Хто сьогодні працює"],
+        ["📋 Всі задачі на сьогодні"],
+    ] + [[name] for name in today_employees]
 
-reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
     await update.message.reply_text(
         f"📅 Сьогодні {today}\n\nОберіть працівника:",
         reply_markup=reply_markup
     )
-
 # --- Обробка вибору ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     selected_name = update.message.text
