@@ -53,8 +53,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # --- Обробка вибору ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     selected_name = update.message.text
+    today = datetime.now().strftime("%Y-%m-%d")
+    records = sheet.get_all_records()
     if selected_name == "👥 Хто сьогодні працює":
-    employees = []
+        employees = []
 
     for row in records:
         if str(row["Date"])[:10] == today:
