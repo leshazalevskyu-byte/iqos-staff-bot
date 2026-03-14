@@ -53,8 +53,39 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # --- Обробка вибору ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     selected_name = update.message.text
-    today = datetime.now().strftime("%Y-%m-%d")
-    records = sheet.get_all_records()
+    if selected_name == "👥 Хто сьогодні працює":
+    employees = []
+
+    for row in records:
+        if str(row["Date"])[:10] == today:
+            employees.append(row["Name"])
+
+    employees = list(set(employees))
+
+    text = "👥 Сьогодні працюють:\n\n"
+
+    for e in employees:
+        text += f"• {e}\n"
+
+    await update.message.reply_text(text)
+    return
+    if selected_name == "📋 Всі задачі на сьогодні":
+    text = "📋 Завдання на сьогодні:\n\n"
+
+    for row in records:
+        if str(row["Date"])[:10] == today:
+            name = row["Name"]
+            tasks = row["Tasks"]
+
+            text += f"👤 {name}\n"
+
+            for task in tasks.split(";"):
+                text += f"• {task.strip()}\n"
+
+            text += "\n"
+
+    await update.message.reply_text(text)
+    return
 
     for row in records:
         if str(row["Date"]).strip()[:10] == today and row["Name"].strip() == selected_name.strip():
