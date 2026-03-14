@@ -20,37 +20,29 @@ creds_dict = json.loads(os.environ["GOOGLE_CREDENTIALS"])
 creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
 client = gspread.authorize(creds)
 
-sheet = client.open("IQOS_Grafik").sheet1  # Назва таблиці
+sheet = client.open("IQOS_Grafik").sheet1
 
-# --- Команда /start ---
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    today = datetime.now().strftime("%Y-%m-%d")
-    records = sheet.get_all_records()
 
-    today_employees = []
-
-    for row in records:
-        if str(row["Date"]) == today:
-            today_employees.append(row["Name"])
-
-    today_employees = list(set(today_employees))
-
-    if not today_employees:
-        await update.message.reply_text("❌ Сьогодні ніхто не працює.")
-        return
-
+def main_menu():
     keyboard = [
         ["👥 Хто сьогодні працює"],
         ["📋 Всі задачі на сьогодні"],
-        ["📅 Хто завтра працює"],
+        ["📅 Хто завтра працює"]
     ]
 
-    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+
+# --- Команда /start ---
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    today = datetime.now().strftime("%Y-%m-%d")
 
     await update.message.reply_text(
-        f"📅 Сьогодні {today}\n\nОберіть працівника:",
-        reply_markup=reply_markup
+        f"📅 Сьогодні {today}\n\nОберіть дію:",
+        reply_markup=main_menu()
     )
+
 # --- Обробка вибору ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
