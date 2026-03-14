@@ -39,8 +39,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Сьогодні ніхто не працює.")
         return
 
-    keyboard = [[name] for name in today_employees]
-    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+   keyboard = [
+["👥 Хто сьогодні працює"],
+["📋 Всі задачі на сьогодні"],
+] + [[name] for name in today_employees]
+
+reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
     await update.message.reply_text(
         f"📅 Сьогодні {today}\n\nОберіть працівника:",
