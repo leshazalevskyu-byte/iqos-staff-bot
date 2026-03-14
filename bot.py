@@ -179,6 +179,8 @@ if selected_name == "📋 Всі задачі на сьогодні":
 app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT, handle_message))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
+print("Bot started")
 
 app.run_polling()
