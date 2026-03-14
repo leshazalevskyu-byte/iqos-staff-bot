@@ -36,12 +36,12 @@ def main_menu():
 # --- Команда /start ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-today = datetime.now().strftime("%Y-%m-%d")
+    today = datetime.now().strftime("%Y-%m-%d")
 
-await update.message.reply_text(
-    f"📅 Сьогодні {today}\n\nОберіть дію:",
-    reply_markup=main_menu()
-)
+    await update.message.reply_text(
+        f"📅 Сьогодні {today}\n\nОберіть дію:",
+        reply_markup=main_menu()
+    )
 
 # --- Обробка вибору ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
