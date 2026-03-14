@@ -101,31 +101,31 @@
                 return
         
             # 📅 Хто завтра працює
-if selected_name == "📅 Хто завтра працює":
+            if selected_name == "📅 Хто завтра працює":
 
-    employees = []
+                employees = []
 
-    for row in records:
-        if str(row["Date"])[:10] == tomorrow:
-            employees.append(row["Name"])
+                for row in records:
+                    if str(row["Date"])[:10] == tomorrow:
+                        employees.append(row["Name"])
 
-    employees = list(set(employees))
+                employees = list(set(employees))
 
-    if not employees:
-        await update.message.reply_text("📅 На завтра ще немає змін")
-        return
+                if not employees:
+                   await update.message.reply_text("📅 На завтра ще немає змін")
+                   return
 
-    text = "📅 Завтра працюють:\n\n"
+                text = "📅 Завтра працюють:\n\n"
 
-    for e in employees:
-        text += f"• {e}\n"
+                for e in employees:
+                    text += f"• {e}\n"
 
-    keyboard = [["⬅️ Назад"]]
+                keyboard = [["⬅️ Назад"]]
 
-    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+                reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
-    await update.message.reply_text(text, reply_markup=reply_markup)
-    return
+                await update.message.reply_text(text, reply_markup=reply_markup)
+                return
         
             # 📋 Всі задачі на сьогодні
             if selected_name == "📋 Всі задачі на сьогодні":
