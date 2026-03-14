@@ -57,6 +57,23 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     today = datetime.now().strftime("%Y-%m-%d")
     records = sheet.get_all_records()
 
+    # ⬅️ Назад у головне меню
+    if selected_name == "⬅️ Назад":
+
+        keyboard = [
+            ["👥 Хто сьогодні працює"],
+            ["📋 Всі задачі на сьогодні"]
+        ]
+
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+        await update.message.reply_text(
+            f"📅 Сьогодні {today}\n\nОберіть дію:",
+            reply_markup=reply_markup
+        )
+        return
+
+
     # 👥 Хто сьогодні працює
     if selected_name == "👥 Хто сьогодні працює":
 
@@ -74,6 +91,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             text += f"• {e}\n"
 
         keyboard = [[name] for name in employees]
+        keyboard.append(["⬅️ Назад"])
 
         reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
