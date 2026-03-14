@@ -5,6 +5,20 @@ import gspread
 from google.oauth2.service_account import Credentials
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+months = {
+    1: "січня",
+    2: "лютого",
+    3: "березня",
+    4: "квітня",
+    5: "травня",
+    6: "червня",
+    7: "липня",
+    8: "серпня",
+    9: "вересня",
+    10: "жовтня",
+    11: "листопада",
+    12: "грудня"
+}
 import os
 import json
 
@@ -37,10 +51,13 @@ def main_menu():
 # --- Команда /start ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    today = datetime.now(ZoneInfo("Europe/Kyiv")).strftime("%Y-%m-%d")
+    now = datetime.now(ZoneInfo("Europe/Kyiv"))
+
+today = now.strftime("%Y-%m-%d")
+today_pretty = f"{now.day} {months[now.month]}"
 
     await update.message.reply_text(
-        f"📅 Сьогодні {today}\n\nОберіть дію:",
+        f"📅 Сьогодні {today_pretty}\n\nОберіть дію:",
         reply_markup=main_menu()
     )
 
