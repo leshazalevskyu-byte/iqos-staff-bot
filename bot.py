@@ -55,8 +55,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     selected_name = update.message.text
     today = datetime.now().strftime("%Y-%m-%d")
     records = sheet.get_all_records()
-    if selected_name == "👥 Хто сьогодні працює":
-        employees = []
+  if selected_name == "👥 Хто сьогодні працює":
+
+    employees = []
 
     for row in records:
         if str(row["Date"])[:10] == today:
@@ -66,15 +67,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     text = "👥 Сьогодні працюють:\n\n"
 
-for e in employees:
-    text += f"• {e}\n"
+    for e in employees:
+        text += f"• {e}\n"
 
-keyboard = [[name] for name in employees]
+    keyboard = [[name] for name in employees]
 
-reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
-await update.message.reply_text(text, reply_markup=reply_markup)
-return
+    await update.message.reply_text(text, reply_markup=reply_markup)
+    return
     if selected_name == "📋 Всі задачі на сьогодні":
         text = "📋 Завдання на сьогодні:\n\n"
 
