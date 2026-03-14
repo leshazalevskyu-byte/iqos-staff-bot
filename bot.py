@@ -52,30 +52,32 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 # --- Обробка вибору ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     selected_name = update.message.text
     today = datetime.now().strftime("%Y-%m-%d")
     records = sheet.get_all_records()
-  if selected_name == "👥 Хто сьогодні працює":
 
-    employees = []
+    if selected_name == "👥 Хто сьогодні працює":
 
-    for row in records:
-        if str(row["Date"])[:10] == today:
-            employees.append(row["Name"])
+        employees = []
 
-    employees = list(set(employees))
+        for row in records:
+            if str(row["Date"])[:10] == today:
+                employees.append(row["Name"])
 
-    text = "👥 Сьогодні працюють:\n\n"
+        employees = list(set(employees))
 
-    for e in employees:
-        text += f"• {e}\n"
+        text = "👥 Сьогодні працюють:\n\n"
 
-    keyboard = [[name] for name in employees]
+        for e in employees:
+            text += f"• {e}\n"
 
-    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+        keyboard = [[name] for name in employees]
 
-    await update.message.reply_text(text, reply_markup=reply_markup)
-    return
+        reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+        await update.message.reply_text(text, reply_markup=reply_markup)
+        return
     if selected_name == "📋 Всі задачі на сьогодні":
         text = "📋 Завдання на сьогодні:\n\n"
 
