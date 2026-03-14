@@ -42,7 +42,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         ["👥 Хто сьогодні працює"],
         ["📋 Всі задачі на сьогодні"],
-    ] + [[name] for name in today_employees]
+    ]
 
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
