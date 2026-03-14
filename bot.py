@@ -57,6 +57,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     today = datetime.now().strftime("%Y-%m-%d")
     records = sheet.get_all_records()
 
+    # 👥 Хто сьогодні працює
     if selected_name == "👥 Хто сьогодні працює":
 
         employees = []
@@ -78,23 +79,47 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await update.message.reply_text(text, reply_markup=reply_markup)
         return
+
+
+    # 📋 Всі задачі на сьогодні
     if selected_name == "📋 Всі задачі на сьогодні":
+
         text = "📋 Завдання на сьогодні:\n\n"
 
+        for row in records:
+            if str(row["Date"])[:10] == today:
+
+                name = row["Name"]
+                tasks = row["Tasks"]
+
+                text += f"👤 {name}\n"
+
+                for task in tasks.split(";"):
+                    text += f"• {task.strip()}\n"
+
+                text += "\n"
+
+        await update.message.reply_text(text)
+        return
+
+
+    # 👤 Задачі конкретного працівника
     for row in records:
-        if str(row["Date"])[:10] == today:
-            name = row["Name"]
+
+        if str(row["Date"])[:10] == today and row["Name"] == selected_name:
+
+            shift = row["Shift"]
             tasks = row["Tasks"]
 
-            text += f"👤 {name}\n"
+            text = f"👤 {selected_name}\n\n"
+            text += f"🕒 Зміна: {shift}\n\n"
+            text += "📋 Завдання:\n"
 
             for task in tasks.split(";"):
                 text += f"• {task.strip()}\n"
 
-            text += "\n"
-
-    await update.message.reply_text(text)
-    return
+            await update.message.reply_text(text)
+            return
 
     for row in records:
         if str(row["Date"]).strip()[:10] == today and row["Name"].strip() == selected_name.strip():
