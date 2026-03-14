@@ -24,13 +24,13 @@ sheet = client.open("IQOS_Grafik").sheet1
 
 
 def main_menu():
-keyboard = [
-    ["👥 Хто сьогодні працює"],
-    ["📋 Всі задачі на сьогодні"],
-    ["📅 Хто завтра працює"]
-]
+    keyboard = [
+        ["👥 Хто сьогодні працює"],
+        ["📋 Всі задачі на сьогодні"],
+        ["📅 Хто завтра працює"]
+    ]
 
-return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
 
 # --- Команда /start ---
