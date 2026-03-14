@@ -53,8 +53,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     now = datetime.now(ZoneInfo("Europe/Kyiv"))
 
-today = now.strftime("%Y-%m-%d")
-today_pretty = f"{now.day} {months[now.month]}"
+    today = now.strftime("%Y-%m-%d")
+    today_pretty = f"{now.day} {months[now.month]}"
 
     await update.message.reply_text(
         f"📅 Сьогодні {today_pretty}\n\nОберіть дію:",
