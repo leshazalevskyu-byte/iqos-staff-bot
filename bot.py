@@ -77,7 +77,7 @@ if selected_name == "📋 Всі задачі на сьогодні":
     tasks = []
 
     for row in records:
-        if str(row["Date"]) == today:
+        if today in str(row["Date"]):
             tasks.append(f"{row['Name']} — {row['Task']}")
 
     if not tasks:
