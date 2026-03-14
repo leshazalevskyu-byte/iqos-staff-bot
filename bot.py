@@ -74,7 +74,7 @@ keyboard = [[name] for name in employees]
 reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
 await update.message.reply_text(text, reply_markup=reply_markup)
-    return
+return
     if selected_name == "📋 Всі задачі на сьогодні":
         text = "📋 Завдання на сьогодні:\n\n"
 
