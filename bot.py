@@ -72,7 +72,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text)
     return
     if selected_name == "📋 Всі задачі на сьогодні":
-    text = "📋 Завдання на сьогодні:\n\n"
+        text = "📋 Завдання на сьогодні:\n\n"
 
     for row in records:
         if str(row["Date"])[:10] == today:
