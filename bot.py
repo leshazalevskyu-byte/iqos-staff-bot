@@ -64,12 +64,29 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --- Обробка кнопок ---
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
+    
     selected_name = update.message.text
 
     today = datetime.now(ZoneInfo("Europe/Kyiv")).strftime("%Y-%m-%d")
     tomorrow = (datetime.now(ZoneInfo("Europe/Kyiv")) + timedelta(days=1)).strftime("%Y-%m-%d")
     records = sheet.get_all_records()
+
+# 📋 Всі задачі на сьогодні
+if selected_name == "📋 Всі задачі на сьогодні":
+
+    tasks = []
+
+    for row in records:
+        if str(row["Date"]) == today:
+            tasks.append(f"{row['Name']} — {row['Task']}")
+
+    if not tasks:
+        text = "❌ На сьогодні задач немає."
+    else:
+        text = "📋 Задачі на сьогодні:\n\n" + "\n".join(tasks)
+
+    await update.message.reply_text(text)
+    return
 
     # ⬅️ Назад
     if selected_name == "⬅️ Назад":
