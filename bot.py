@@ -13,7 +13,7 @@ import json
 
 TOKEN = os.environ["BOT_TOKEN"]
 
-# --- Google Sheets підключення ---
+# ---------- Google Sheets ----------
 
 scope = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -28,9 +28,28 @@ client = gspread.authorize(creds)
 sheet = client.open("IQOS_Grafik").sheet1
 
 
-# --- Меню ---
+# ---------- українські місяці ----------
+
+months = {
+    1: "січня",
+    2: "лютого",
+    3: "березня",
+    4: "квітня",
+    5: "травня",
+    6: "червня",
+    7: "липня",
+    8: "серпня",
+    9: "вересня",
+    10: "жовтня",
+    11: "листопада",
+    12: "грудня"
+}
+
+
+# ---------- головне меню ----------
 
 def main_menu():
+
     keyboard = [
         ["👥 Хто сьогодні працює"],
         ["📋 Всі задачі на сьогодні"],
@@ -40,44 +59,50 @@ def main_menu():
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
 
 
-# --- /start ---
+# ---------- /start ----------
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    today = datetime.now(ZoneInfo("Europe/Kyiv")).strftime("%Y-%m-%d")
+    now = datetime.now(ZoneInfo("Europe/Kyiv"))
+
+    today_pretty = f"{now.day} {months[now.month]}"
 
     await update.message.reply_text(
-        f"📅 Сьогодні {today}\n\nОберіть дію:",
+        f"📅 Сьогодні {today_pretty}\n\nОберіть дію:",
         reply_markup=main_menu()
     )
 
 
-# --- обробка кнопок ---
+# ---------- обробка кнопок ----------
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    selected_name = update.message.text
+    selected = update.message.text
 
-    today = datetime.now(ZoneInfo("Europe/Kyiv")).strftime("%Y-%m-%d")
-    tomorrow = (datetime.now(ZoneInfo("Europe/Kyiv")) + timedelta(days=1)).strftime("%Y-%m-%d")
+    now = datetime.now(ZoneInfo("Europe/Kyiv"))
+
+    today = now.strftime("%Y-%m-%d")
+    tomorrow = (now + timedelta(days=1)).strftime("%Y-%m-%d")
+
+    today_pretty = f"{now.day} {months[now.month]}"
 
     records = sheet.get_all_records()
 
 
-    # --- назад у меню ---
+    # ---------- назад ----------
 
-    if selected_name == "⬅️ Назад":
+    if selected == "⬅️ Назад":
 
         await update.message.reply_text(
-            f"📅 Сьогодні {today}\n\nОберіть дію:",
+            f"📅 Сьогодні {today_pretty}\n\nОберіть дію:",
             reply_markup=main_menu()
         )
         return
 
 
-    # --- хто сьогодні працює ---
+    # ---------- хто сьогодні працює ----------
 
-    if selected_name == "👥 Хто сьогодні працює":
+    if selected == "👥 Хто сьогодні працює":
 
         employees = []
 
@@ -88,79 +113,116 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         employees = list(set(employees))
 
         if not employees:
-            text = "❌ Сьогодні ніхто не працює."
-        else:
-            text = "👥 Сьогодні працюють:\n\n" + "\n".join([f"• {e}" for e in employees])
 
-        keyboard = [["⬅️ Назад"]]
+            await update.message.reply_text("❌ Сьогодні ніхто не працює")
+            return
+
+        keyboard = [[e] for e in employees]
+
+        keyboard.append(["⬅️ Назад"])
 
         await update.message.reply_text(
-            text,
+            "👥 Оберіть працівника:",
             reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
         )
 
         return
 
 
-    # --- хто завтра працює ---
+    # ---------- задачі конкретного працівника ----------
 
-    if selected_name == "📅 Хто завтра працює":
+    employee_tasks = []
 
-        employees = []
+    for row in records:
 
-        for row in records:
-            if tomorrow in str(row["Date"]):
-                employees.append(row["Name"])
+        if selected == row["Name"] and today in str(row["Date"]):
 
-        employees = list(set(employees))
+            employee_tasks.append(row["Task"])
 
-        if not employees:
-            text = "❌ Завтра ніхто не працює."
-        else:
-            text = "📅 Завтра працюють:\n\n" + "\n".join([f"• {e}" for e in employees])
+    if employee_tasks:
 
-        keyboard = [["⬅️ Назад"]]
+        text = f"📋 Задачі для {selected}:\n\n"
+
+        for task in employee_tasks:
+            text += f"• {task}\n"
 
         await update.message.reply_text(
             text,
-            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+            reply_markup=ReplyKeyboardMarkup([["⬅️ Назад"]], resize_keyboard=True)
         )
 
         return
 
 
-    # --- всі задачі на сьогодні ---
+    # ---------- всі задачі ----------
 
-    if selected_name == "📋 Всі задачі на сьогодні":
+    if selected == "📋 Всі задачі на сьогодні":
 
         tasks = []
 
         for row in records:
+
             if today in str(row["Date"]):
+
                 tasks.append(f"{row['Name']} — {row['Task']}")
 
         if not tasks:
-            text = "❌ На сьогодні задач немає."
-        else:
-            text = "📋 Задачі на сьогодні:\n\n" + "\n".join(tasks)
 
-        keyboard = [["⬅️ Назад"]]
+            text = "❌ На сьогодні задач немає"
+
+        else:
+
+            text = "📋 Задачі на сьогодні:\n\n" + "\n".join(tasks)
 
         await update.message.reply_text(
             text,
-            reply_markup=ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+            reply_markup=ReplyKeyboardMarkup([["⬅️ Назад"]], resize_keyboard=True)
         )
 
         return
 
 
-# --- запуск бота ---
+    # ---------- хто завтра працює ----------
+
+    if selected == "📅 Хто завтра працює":
+
+        employees = []
+        for row in records:
+
+            if tomorrow in str(row["Date"]):
+
+                employees.append(row["Name"])
+
+        employees = list(set(employees))
+
+        if not employees:
+
+            text = "❌ Завтра ніхто не працює"
+
+        else:
+
+            text = "📅 Завтра працюють:\n\n"
+
+            for e in employees:
+
+                text += f"• {e}\n"
+
+        await update.message.reply_text(
+            text,
+            reply_markup=ReplyKeyboardMarkup([["⬅️ Назад"]], resize_keyboard=True)
+        )
+
+        return
+
+
+# ---------- запуск ----------
 
 def main():
 
     app = ApplicationBuilder().token(TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     print("Bot started")
@@ -168,5 +230,5 @@ def main():
     app.run_polling()
 
 
-if __name__ == "__main__":
+if name == "__main__":
     main()
